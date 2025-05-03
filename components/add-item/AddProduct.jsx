@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -13,31 +13,26 @@ const AddProduct = () => {
   const [productName, setProductName] = useState("");
   const [stockUnit, setStockUnit] = useState("");
   const [availableStock, setAvailableStock] = useState("");
-  const [image, setImage] = useState(null); // New: image input
-  const [allCategories, setAllCategories] = useState([]);
+  const [image, setImage] = useState(null);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("/api/categories");
-        const data = await res.json();
-        setAllCategories(data);
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-      }
-    };
-
-    fetchCategories();
-  }, []);
+  // Static categories
+  const categories = [
+    "Plastic",
+    "Plastic Molding",
+    "Backlight Storage Box",
+    "Backlight",
+    "Brass",
+    "Pital",
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!selectedCategory || !productName || !stockUnit || !availableStock) {
+  
+    if (!selectedCategory || !stockUnit || !availableStock) {
       toast.error("Please fill all required fields");
       return;
     }
-
+  
     try {
       const formData = new FormData();
       formData.append("category", selectedCategory);
@@ -47,19 +42,26 @@ const AddProduct = () => {
       if (image) {
         formData.append("image", image);
       }
-
+  
       const res = await fetch("/api/products", {
         method: "POST",
-        body: formData, // Send as FormData (to handle file upload)
+        body: formData,
       });
-
+  
+      const data = await res.json();
+  
       if (!res.ok) {
-        toast.error("Failed to add product");
+        // ✅ Show specific toast if duplicate
+        if (data.error === "Product already exists") {
+          toast.error("Product already exists");
+        } else {
+          toast.error("Failed to add product");
+        }
         return;
       }
-
+  
       toast.success("Product added successfully");
-
+  
       // Reset form
       setSelectedCategory("");
       setProductName("");
@@ -71,7 +73,7 @@ const AddProduct = () => {
       console.error(err);
     }
   };
-
+  
   return (
     <div>
       <Card className="max-w-2xl">
@@ -89,9 +91,9 @@ const AddProduct = () => {
                   <SelectValue placeholder="Select Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allCategories.map((cat) => (
-                    <SelectItem key={cat._id} value={cat.category}>
-                      {cat.category}
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -120,6 +122,7 @@ const AddProduct = () => {
                   <SelectItem value="kg">Kg</SelectItem>
                   <SelectItem value="bags">Bags</SelectItem>
                   <SelectItem value="dozen">dozen</SelectItem>
+                  <SelectItem value="gurace">gurace</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -3,14 +3,8 @@
 import { useRouter } from "next/navigation";
 import AddProduct from "@/components/add-item/AddProduct"
 import { useState } from "react";
-import AddCategory from "@/components/add-category/AddCategory"
 import {
   Package,
-  Tags,
-  TabletSmartphone,
-  ShoppingCart,
-  Receipt,
-  Users,
   Settings,
   Plus,
 } from "lucide-react";
@@ -32,8 +26,6 @@ export default function DashboardLayout({
   const router = useRouter();
   const [openProductList, setOpenProductList] = useState(false);
   const [openProductForm, setOpenProductForm] = useState(false);
-  const [openCategoryList, setOpenCategoryList] = useState(false);
-  const [openCategoryForm, setOpenCategoryForm] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">

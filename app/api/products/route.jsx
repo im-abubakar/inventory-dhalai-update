@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import Product from "@/models/Product"; // your mongoose model
-import connectDB from "@/lib/mongodb"; // adjust path
-
+import Product from "@/models/product"; // your product mongoose model
+import { writeFile } from "fs/promises";
 import path from "path";
-import fs from "fs/promises";
-import { v4 as uuidv4 } from "uuid";
+import connectDB from "@/lib/mongodb";
+
 
 
 // Enable dynamic route (optional but good)
@@ -22,51 +21,49 @@ export async function GET() {
 
 
 export async function POST(req) {
-  try {
-    await connectDB();
+  await connectDB();
 
-    // Parse form data (multipart/form-data)
-    const formData = await req.formData();
+  const formData = await req.formData();
+  const category = formData.get("category");
+  const productName = formData.get("productName");
+  const stockUnit = formData.get("stockUnit");
+  const availableStock = formData.get("availableStock");
+  const image = formData.get("image"); // image file
 
-    const category = formData.get("category");
-    const productName = formData.get("productName");
-    const stockUnit = formData.get("stockUnit");
-    const availableStock = formData.get("availableStock");
-    const imageFile = formData.get("image"); // image file (optional)
+  // ✅ Check if product already exists (case-insensitive)
+  const existingProduct = await Product.findOne({
+    category,
+    productName: { $regex: new RegExp("^" + productName + "$", "i") },
+  });
 
-    // Validate required fields
-    if (!category || !productName || !stockUnit || !availableStock) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    let imageUrl = null;
-
-    // If image uploaded
-    if (imageFile && typeof imageFile.name === "string") {
-      const ext = path.extname(imageFile.name);
-      const filename = uuidv4() + ext;
-      const filePath = path.join(process.cwd(), "public", "uploads", filename);
-
-      const buffer = Buffer.from(await imageFile.arrayBuffer());
-      await fs.writeFile(filePath, buffer);
-
-      imageUrl = `/uploads/${filename}`;
-    }
-
-    // Save to DB
-    const newProduct = new Product({
-      category,
-      productName,
-      stockUnit,
-      availableStock,
-      image: imageUrl,
-    });
-
-    await newProduct.save();
-
-    return NextResponse.json({ message: "Product added successfully" });
-  } catch (error) {
-    console.error("Error adding product:", error);
-    return NextResponse.json({ error: "Failed to add product" }, { status: 500 });
+  if (existingProduct) {
+    return NextResponse.json(
+      { error: "Product already exists" },
+      { status: 400 }
+    );
   }
+
+  // ✅ Save image if present
+  let imageUrl = null;
+  if (image) {
+    const bytes = await image.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const filename = Date.now() + "-" + image.name;
+    const filepath = path.join(process.cwd(), "public/uploads", filename);
+    await writeFile(filepath, buffer);
+    imageUrl = "/uploads/" + filename;
+  }
+
+  // ✅ Create and save new product
+  const newProduct = new Product({
+    category,
+    productName,
+    stockUnit,
+    availableStock,
+    image: imageUrl,
+  });
+
+  await newProduct.save();
+
+  return NextResponse.json({ message: "Product added" }, { status: 201 });
 }

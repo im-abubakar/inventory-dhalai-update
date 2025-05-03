@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Check, Printer, Hand, Ban, DollarSign, X, TicketIcon, CheckCheck, CheckCheckIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import CartItems from "@/components/cartItems";
 
 export default function Dashboard() {
   // Static categories
@@ -68,10 +69,36 @@ export default function Dashboard() {
     }
   };
 
-  // Handle removing from cart
   const handleRemoveFromCart = (productId) => {
-    setCartItems(cartItems.filter((item) => item._id !== productId));
+    setCartItems((prev) => prev.filter((item) => item._id !== productId));
   };
+
+  const handleDone = async () => {
+    try {
+      // Loop through each cart item
+      for (const item of cartItems) {
+        await fetch(`/api/products/${item._id}/deduct`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ qty: item.qty }), // deduct these many qty
+        });
+      }
+
+      // Optionally refetch products to update UI
+      await fetchProducts();
+
+      // Clear cart
+      setCartItems([]);
+
+      // Show toast or success alert
+      alert("Stock updated & sale completed!");
+
+    } catch (err) {
+      console.error("Failed to complete sale:", err);
+      alert("Error occurred while completing sale.");
+    }
+  };
+
 
   return (
     <div className="flex p-4 bg-gradient-to-br from-green-100 to-green-200">
@@ -93,45 +120,18 @@ export default function Dashboard() {
           </div>
 
           {/* Items Table */}
-          <div className="border rounded-lg overflow-hidden">
-            <div className="flex justify-between px-4 py-2 bg-gray-100 font-semibold">
-              <span>#</span>
-              <span>Category</span>
-              <span>Item</span>
-              <span>Qty</span>
-              <span>X</span>
-            </div>
-            {cartItems.length > 0 ? (
-              cartItems.map((item, index) => (
-                <div
-                  key={item._id}
-                  className="flex justify-between px-4 py-2 border-b items-center"
-                >
-                  <span>{index + 1}</span>
-                  <span>{item.category}</span>
-                  <span>{item.productName}</span>
-                  <span>{item.qty} {item.stockUnit}</span>
-                  <button
-                    onClick={() => handleRemoveFromCart(item._id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ))
-            ) : (
-              <div className="h-64 flex items-center justify-center text-gray-400">
-                No items added
-              </div>
-            )}
-          </div>
+          <CartItems
+            cartItems={cartItems}
+            setCartItems={setCartItems}
+            onRemove={handleRemoveFromCart}
+          />
         </div>
 
         {/* Footer */}
         <div className="pt-4">
           <div className="flex justify-between items-center mb-2">
             <span>Total Item(s): {cartItems.length}</span>
-            
+
           </div>
 
           <div className="flex gap-2">
@@ -143,7 +143,10 @@ export default function Dashboard() {
               <Ban size={16} className="mr-1" />
               Cancel
             </Button>
-            <Button className="bg-green-500 hover:bg-green-600 text-white">
+            <Button
+              className="bg-green-500 hover:bg-green-600 text-white"
+              onClick={handleDone}
+            >
               <CheckCheckIcon size={16} className="mr-1" />
               Done
             </Button>
@@ -152,9 +155,9 @@ export default function Dashboard() {
       </div>
 
       {/* Right Section */}
-      <div className="w-1/2 p-4 bg-white rounded-xl shadow-md ml-4">
+      <div className="w-1/2 p-4 bg-white rounded-xl shadow-md ml-4 h-[600px] overflow-y-auto">
         {/* Category Tabs */}
-        <div className="flex gap-2 mb-4 flex-wrap">
+        <div className="flex gap-2 mb-4 flex-wrap sticky top-0 bg-white py-2 z-10">
           {categories.map((cat) => (
             <Button
               key={cat}
@@ -195,6 +198,7 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+
     </div>
   );
 }
