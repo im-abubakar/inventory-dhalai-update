@@ -14,15 +14,28 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Static credentials
-    if (email === "admin@example.com" && password === "password123") {
-      router.push("/dashboard");
-    } else {
-      setError("Invalid email or password");
+    setError("");
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        router.push("/dashboard");
+      } else {
+        setError(data.message);
+      }
+    } catch (err) {
+      setError("Something went wrong");
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

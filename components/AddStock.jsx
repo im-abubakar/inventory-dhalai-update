@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { toast } from "sonner";
 
-const AddProduct = () => {
+const AddStock = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [productName, setProductName] = useState("");
   const [stockUnit, setStockUnit] = useState("");
@@ -107,7 +107,7 @@ const AddProduct = () => {
     <div>
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle>New Item Details</CardTitle>
+          <CardTitle className="text-center">Add Stock</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -174,20 +174,10 @@ const AddProduct = () => {
                 onChange={(e) => setAvailableStock(e.target.value)}
               />
             </div>
-
-            {/* Image Upload */}
-            <div className="space-y-2">
-              <Label htmlFor="image">Product Image (optional)</Label>
-              <Input
-                id="image"
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImage(e.target.files[0])}
-              />
-            </div>
+            
 
             <Button type="submit" className="w-full">
-              Add Product
+              Add Stock
             </Button>
           </form>
         </CardContent>
@@ -196,4 +186,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct;
+export default AddStock;
