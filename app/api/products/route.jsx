@@ -27,8 +27,13 @@ export async function POST(req) {
   const category = formData.get("category");
   const productName = formData.get("productName");
   const stockUnit = formData.get("stockUnit");
-  const availableStock = formData.get("availableStock");
+  let availableStock = Number(formData.get("availableStock")); // convert to number
   const image = formData.get("image"); // image file
+
+  // ✅ Apply custom logic: Backlight + dozen => multiply stock by 12
+  if (category === "Backlight" && stockUnit === "dozen") {
+    availableStock = availableStock * 12;
+  }
 
   // ✅ Check if product already exists (case-insensitive)
   const existingProduct = await Product.findOne({

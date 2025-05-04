@@ -141,7 +141,7 @@ export default function Dashboard() {
       <div className="w-1/2 p-4 bg-white rounded-xl shadow-md flex flex-col justify-between">
         <div>
           {/* Customer Select and Barcode */}
-          <div className="flex items-center gap-2 mb-2">
+          {/* <div className="flex items-center gap-2 mb-2">
             <Input placeholder="Walk in customer" />
             <Button size="icon">
               <Plus />
@@ -152,7 +152,7 @@ export default function Dashboard() {
             <Button size="icon" variant="secondary">
               <Check />
             </Button>
-          </div>
+          </div> */}
 
           {/* Items Table */}
           <CartItems

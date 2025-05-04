@@ -164,6 +164,7 @@ const ProductList = ({ products, fetchProducts }) => {
                                                     <option value="bags">bags</option>
                                                     <option value="quantity">quantity</option>
                                                     <option value="dozen">dozen</option>
+                                                    <option value="gurace">gurace</option>
                                                 </select>
                                             ) : (
                                                 product.stockUnit
