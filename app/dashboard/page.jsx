@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Check, Printer, Hand, Ban, DollarSign, X, TicketIcon, CheckCheck, CheckCheckIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import CartItems from "@/components/cartItems";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   // Static categories
@@ -75,29 +76,63 @@ export default function Dashboard() {
 
   const handleDone = async () => {
     try {
-      // Loop through each cart item
-      for (const item of cartItems) {
-        await fetch(`/api/products/${item._id}/deduct`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ qty: item.qty }), // deduct these many qty
-        });
+      // 1. Deduct stock first
+      const itemsToDeduct = cartItems.map((item) => ({
+        id: item._id,
+        qty: item.qty,
+      }));
+  
+      const res1 = await fetch("/api/products/deduct", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(itemsToDeduct),
+      });
+  
+      const data1 = await res1.json();
+  
+      if (!res1.ok) {
+        toast.error(data1.error || "Failed to update stock");
+        return;
       }
-
-      // Optionally refetch products to update UI
-      await fetchProducts();
-
-      // Clear cart
-      setCartItems([]);
-
-      // Show toast or success alert
-      alert("Stock updated & sale completed!");
-
+  
+      // 2. Save sale record
+      const salePayload = {
+        items: cartItems.map((item) => ({
+          productName: item.productName,
+          qty: item.qty,
+          soldAt: new Date(),
+        })),
+      };
+  
+      const res2 = await fetch("/api/sales", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(salePayload),
+      });
+  
+      const data2 = await res2.json();
+  
+      if (!res2.ok) {
+        toast.error(data2.error || "Failed to record sale");
+        return;
+      }
+  
+      toast.success("Sale recorded and stock updated!");
+  
+      setCartItems([]); // Clear cart
+      fetchProducts();  // Refresh products
+  
     } catch (err) {
-      console.error("Failed to complete sale:", err);
-      alert("Error occurred while completing sale.");
+      console.error(err);
+      toast.error("Error during sale process");
     }
   };
+  
+  
 
 
   return (
@@ -155,7 +190,7 @@ export default function Dashboard() {
       </div>
 
       {/* Right Section */}
-      <div className="w-1/2 p-4 bg-white rounded-xl shadow-md ml-4 h-[600px] overflow-y-auto">
+      <div className="w-1/2 p-4 bg-white rounded-xl shadow-md ml-4 h-[600px]">
         {/* Category Tabs */}
         <div className="flex gap-2 mb-4 flex-wrap sticky top-0 bg-white py-2 z-10">
           {categories.map((cat) => (
@@ -169,33 +204,35 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Product Cards */}
-        <div className="grid grid-cols-5 gap-4">
-          {filteredProducts.map((prod, index) => (
-            <Card
-              key={prod._id || index}
-              className="text-center cursor-pointer hover:shadow-lg transition"
-              onClick={() => handleAddToCart(prod)}
-            >
-              <CardContent className="py-4">
-                {prod.image ? (
-                  <img
-                    src={prod.image}
-                    alt={prod.productName}
-                    className="h-20 w-full object-cover mb-2 rounded"
-                  />
-                ) : (
-                  <div className="text-gray-400 mb-1">NO IMAGE</div>
-                )}
-                <div className="text-blue-500 font-semibold">
-                  {prod.productName}
-                </div>
-                <div className="text-xs text-gray-500">
-                  Stock: {prod.availableStock} {prod.stockUnit}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="h-[450px] overflow-y-auto">
+          {/* Product Cards */}
+          <div className="grid grid-cols-5 gap-">
+            {filteredProducts.map((prod, index) => (
+              <Card
+                key={prod._id || index}
+                className="text-center cursor-pointer hover:shadow-lg transition"
+                onClick={() => handleAddToCart(prod)}
+              >
+                <CardContent className="py-4">
+                  {prod.image ? (
+                    <img
+                      src={prod.image}
+                      alt={prod.productName}
+                      className="h-20 w-full object-cover mb-2 rounded"
+                    />
+                  ) : (
+                    <div className="text-gray-400 mb-1">NO IMAGE</div>
+                  )}
+                  <div className="text-blue-500 font-semibold">
+                    {prod.productName}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Stock: {prod.availableStock} {prod.stockUnit}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
 

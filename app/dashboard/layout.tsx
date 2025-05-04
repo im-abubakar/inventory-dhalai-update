@@ -1,12 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import AddProduct from "@/components/add-item/AddProduct"
 import { useState } from "react";
 import {
   Package,
   Settings,
   Plus,
+  File,
+  BookDashed,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +25,9 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+
   const router = useRouter();
+  const pathname = usePathname();
   const [openProductList, setOpenProductList] = useState(false);
   const [openProductForm, setOpenProductForm] = useState(false);
 
@@ -138,8 +142,27 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center space-x-2">
-            
-            
+
+           
+
+            <Button
+              variant={pathname === "/dashboard" ? "default" : "ghost"}
+              className="flex items-center"
+              onClick={() => router.push("/dashboard")}
+            >
+              <BookDashed className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+
+            <Button
+              variant={pathname === "/dashboard/transaction" ? "default" : "ghost"}
+              className="flex items-center"
+              onClick={() => router.push("/dashboard/transaction")}
+            >
+              <File className="mr-2 h-4 w-4" />
+              Transaction
+            </Button>
+
             <Button
               variant="ghost"
               className="flex items-center"
@@ -148,6 +171,7 @@ export default function DashboardLayout({
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </Button>
+
             <Button variant="destructive" size="sm">
               Log Out
             </Button>

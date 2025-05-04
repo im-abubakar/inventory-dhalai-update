@@ -52,6 +52,8 @@
     "eslint-config-next": "13.5.1",
     "formidable": "^3.5.4",
     "input-otp": "^1.2.4",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.446.0",
     "mongodb": "^6.3.0",
     "mongoose": "^8.0.3",
