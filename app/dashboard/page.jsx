@@ -6,27 +6,26 @@ import { Plus, Check, Printer, Hand, Ban, DollarSign, X, TicketIcon, CheckCheck,
 import { useEffect, useState } from "react";
 import CartItems from "@/components/cartItems";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
-  // Static categories
-  const categories = [
-    "All",
-    "Plastic",
-    "Plastic Molding",
-    "Backlight Storage Box",
-    "Backlight",
-    "Brass",
-    "Pital",
-  ];
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      // Redirect to login if not authenticated
+      router.push("/login");
+    },
+  });
 
+  console.log("role is",session?.user?.role);
+  const router = useRouter();
   const [selectedTab, setSelectedTab] = useState("All");
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
 
   // State to hold items added to cart (left table)
   const [cartItems, setCartItems] = useState([]);
-
-  // Fetch products
   const fetchProducts = async () => {
     try {
       const res = await fetch("/api/products");
@@ -37,6 +36,7 @@ export default function Dashboard() {
       console.error("Failed to fetch products:", err);
     }
   };
+
 
   useEffect(() => {
     fetchProducts();
@@ -52,6 +52,33 @@ export default function Dashboard() {
       );
     }
   }, [selectedTab, products]);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return <p>Loading...</p>; // While checking session
+  }
+
+
+  // Static categories
+  const categories = [
+    "All",
+    "Plastic",
+    "Plastic Molding",
+    "Backlight Storage Box",
+    "Backlight",
+    "Brass",
+    "Pital",
+  ];
+
+
+
+  // Fetch products
+ 
 
   // Handle adding to cart
   const handleAddToCart = (product) => {
@@ -81,7 +108,7 @@ export default function Dashboard() {
         id: item._id,
         qty: item.qty,
       }));
-  
+
       const res1 = await fetch("/api/products/deduct", {
         method: "PUT",
         headers: {
@@ -89,14 +116,14 @@ export default function Dashboard() {
         },
         body: JSON.stringify(itemsToDeduct),
       });
-  
+
       const data1 = await res1.json();
-  
+
       if (!res1.ok) {
         toast.error(data1.error || "Failed to update stock");
         return;
       }
-  
+
       // 2. Save sale record
       const salePayload = {
         items: cartItems.map((item) => ({
@@ -105,7 +132,7 @@ export default function Dashboard() {
           soldAt: new Date(),
         })),
       };
-  
+
       const res2 = await fetch("/api/sales", {
         method: "POST",
         headers: {
@@ -113,26 +140,26 @@ export default function Dashboard() {
         },
         body: JSON.stringify(salePayload),
       });
-  
+
       const data2 = await res2.json();
-  
+
       if (!res2.ok) {
         toast.error(data2.error || "Failed to record sale");
         return;
       }
-  
+
       toast.success("Sale recorded and stock updated!");
-  
+
       setCartItems([]); // Clear cart
       fetchProducts();  // Refresh products
-  
+
     } catch (err) {
       console.error(err);
       toast.error("Error during sale process");
     }
   };
-  
-  
+
+
 
 
   return (

@@ -14,12 +14,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { signOut } from "next-auth/react"; // Import signOut from NextAuth.js
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+
 
 export default function DashboardLayout({ children }) {
   const [products, setProducts] = useState([]);
   const [openProductList, setOpenProductList] = useState(false);
   const [openProductForm, setOpenProductForm] = useState(false);
   const [openStockForm, setOpenStockForm] = useState(false);
+  const { data: session } = useSession();
+
 
   const router = useRouter();
   const pathname = usePathname();
@@ -37,6 +43,12 @@ export default function DashboardLayout({ children }) {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false }); // Log out the user without redirecting immediately
+    router.push("/login"); // Redirect to login page (or wherever you'd like after logout)
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,7 +69,6 @@ export default function DashboardLayout({ children }) {
               </DialogContent>
             </Dialog>
 
-
             <Dialog open={openProductList} onOpenChange={setOpenProductList}>
               <DialogTrigger asChild>
                 <Button variant="ghost" className="flex items-center">
@@ -77,8 +88,6 @@ export default function DashboardLayout({ children }) {
                 />
               </DialogContent>
             </Dialog>
-
-
 
             <Dialog open={openStockForm} onOpenChange={setOpenStockForm}>
               <DialogTrigger asChild>
@@ -121,7 +130,21 @@ export default function DashboardLayout({ children }) {
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </Button>
-            <Button variant="destructive" size="sm">
+            {session?.user?.role === "user" && (
+              <Image
+                src="/profile.jpeg" // ✅ Local image from public folder
+                alt="Profile"
+                className="w-8 h-8 object-cover"
+                height={100}
+                width={100}
+              />
+            )}
+
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleLogout} // Add logout handler here
+            >
               Log Out
             </Button>
           </div>

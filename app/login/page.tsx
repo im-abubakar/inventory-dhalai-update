@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { signIn } from "next-auth/react";
 
 export default function Login() {
   const router = useRouter();
@@ -18,24 +19,18 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-      });
+    const res = await signIn("credentials", {
+      redirect: false, // We'll manually handle redirection
+      email,
+      password,
+    });
 
-      const data = await res.json();
-
-      if (data.success) {
-        router.push("/dashboard");
-      } else {
-        setError(data.message);
-      }
-    } catch (err) {
-      setError("Something went wrong");
+    if (res?.error) {
+      setError("Invalid email or password");
+    } else {
+      router.push("/dashboard");
     }
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

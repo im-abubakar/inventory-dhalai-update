@@ -1,16 +1,16 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import Head from 'next/head';
 import { Toaster } from 'sonner';
+import SessionWrapper from '@/components/SessionWrapper';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Point of Sale', 
+  title: 'Point of Sale',
   description: 'Point of Sale System for Small Businesses',
   icons: {
-    icon: '/favicon1.png', // ✅ Favicon PNG path
+    icon: '/favicon1.png',
   },
 };
 
@@ -21,10 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-    
-
-      <body className={inter.className}>{children}</body>
-      <Toaster /> 
+      <body className={inter.className}>
+        <SessionWrapper>{children}</SessionWrapper>
+      </body>
+      <Toaster />
     </html>
   );
 }
