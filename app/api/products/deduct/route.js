@@ -6,14 +6,14 @@ export async function PUT(req) {
   await connectDB();
 
   const items = await req.json(); // Expecting array of items: [{ id, qty }, ...]
-
+  console.log("Items to deduct:", items);
   if (!Array.isArray(items) || items.length === 0) {
     return NextResponse.json({ error: "No items provided" }, { status: 400 });
   }
 
   try {
     for (const item of items) {
-      const { id, qty } = item;
+      const { id, qty, stockUnit, category } = item;
 
       if (!id || qty <= 0) continue;
 
@@ -21,11 +21,19 @@ export async function PUT(req) {
 
       if (!product) continue;
 
-      if (product.availableStock < qty) {
+      // Calculate quantity to deduct
+      let deductQty = qty;
+
+      if (category === "Backlight" && stockUnit === "dozen") {
+        deductQty = qty * 12; // Convert dozen to pieces
+      }
+
+      if (product.availableStock < deductQty) {
         return NextResponse.json({ error: `Not enough stock for ${product.productName}` }, { status: 400 });
       }
 
-      product.availableStock -= qty;
+      // Deduct stock
+      product.availableStock -= deductQty;
       await product.save();
     }
 

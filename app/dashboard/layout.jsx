@@ -4,9 +4,10 @@ import { useRouter, usePathname } from "next/navigation";
 import AddProduct from "@/components/add-item/AddProduct";
 import ProductList from "@/components/ProductList";
 import { useEffect, useState } from "react";
-import { Package, Settings, Plus, File, BookDashed } from "lucide-react";
+import { Package, Plus, File, BookDashed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AddStock from "@/components/AddStock";
+import Settings from "@/components/settings";
 import {
   Dialog,
   DialogContent,
@@ -51,7 +52,7 @@ export default function DashboardLayout({ children }) {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 ">
       <div className="bg-white shadow-sm">
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex space-x-2">
@@ -114,23 +115,36 @@ export default function DashboardLayout({ children }) {
               <BookDashed className="mr-2 h-4 w-4" />
               Dashboard
             </Button>
-            <Button
-              variant={pathname === "/dashboard/transaction" ? "default" : "ghost"}
-              className="flex items-center"
-              onClick={() => router.push("/dashboard/transaction")}
-            >
-              <File className="mr-2 h-4 w-4" />
-              Transaction
-            </Button>
-            <Button
-              variant={pathname === "/dashboard/settings" ? "default" : "ghost"}
-              className="flex items-center"
-              onClick={() => router.push("/dashboard/settings")}
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </Button>
-            {session?.user?.role === "user" && (
+
+
+            {session?.user?.role === "admin" && (
+              <Button
+                variant={pathname === "/dashboard/transaction" ? "default" : "ghost"}
+                className="flex items-center"
+                onClick={() => router.push("/dashboard/transaction")}
+              >
+                <File className="mr-2 h-4 w-4" />
+                Transaction
+              </Button>
+
+            )}
+
+
+            <Dialog open={openStockForm} onOpenChange={setOpenStockForm}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="flex items-center ml-4">
+                  <Package className="mr-2 h-4 w-4" />
+                  Setting
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="mt-0 mx-auto w-[25%] max-w-xl">
+                <DialogHeader>
+                  {/* <DialogTitle>Stock Management</DialogTitle> */}
+                </DialogHeader>
+                <Settings />
+              </DialogContent>
+            </Dialog>
+            {session?.user?.role === "admin" && (
               <Image
                 src="/profile.jpeg" // ✅ Local image from public folder
                 alt="Profile"

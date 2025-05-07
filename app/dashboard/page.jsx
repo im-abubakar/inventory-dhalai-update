@@ -10,6 +10,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
@@ -18,7 +19,7 @@ export default function Dashboard() {
     },
   });
 
-  console.log("role is",session?.user?.role);
+  console.log("role is", session?.user?.role);
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState("All");
   const [products, setProducts] = useState([]);
@@ -78,7 +79,7 @@ export default function Dashboard() {
 
 
   // Fetch products
- 
+
 
   // Handle adding to cart
   const handleAddToCart = (product) => {
@@ -102,11 +103,20 @@ export default function Dashboard() {
   };
 
   const handleDone = async () => {
+    if (cartItems.length === 0) {
+      toast.error("Please add at least one product before submitting.");
+      return; // Stop the function here
+    }
+
     try {
+      setIsSubmitting(true);
       // 1. Deduct stock first
+      // console.log("cart items are", cartItems);
       const itemsToDeduct = cartItems.map((item) => ({
         id: item._id,
         qty: item.qty,
+        stockUnit: item.stockUnit,
+        category: item.category,
       }));
 
       const res1 = await fetch("/api/products/deduct", {
@@ -156,6 +166,8 @@ export default function Dashboard() {
     } catch (err) {
       console.error(err);
       toast.error("Error during sale process");
+    } finally {
+      setIsSubmitting(false); // Always re-enable button
     }
   };
 
@@ -206,11 +218,12 @@ export default function Dashboard() {
               Cancel
             </Button>
             <Button
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
               onClick={handleDone}
+              disabled={isSubmitting} // Disable button when submitting
             >
               <CheckCheckIcon size={16} className="mr-1" />
-              Done
+              {isSubmitting ? "Processing..." : "Done"}
             </Button>
           </div>
         </div>

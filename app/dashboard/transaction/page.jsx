@@ -2,7 +2,18 @@
 import React, { useEffect, useState } from 'react';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 const Transaction = () => {
+    const { data: session, status } = useSession(); // get session
+    const router = useRouter();
+
+    useEffect(() => {
+        if (status === "loading") return; // wait till session loads
+        if (session?.user?.role === "user") {
+            router.push("/dashboard"); // redirect to home or any page
+        }
+    }, [session, status, router]);
 
     const [products, setProducts] = useState([]);
     const [sales, setSales] = useState([]);
@@ -111,6 +122,9 @@ const Transaction = () => {
         doc.save("transactions.pdf");
     };
 
+    if (status === "loading" || session?.user?.role === "user") {
+        return <div>Loading...</div>; // Or skeleton
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-green-100 to-green-200 p-4">
