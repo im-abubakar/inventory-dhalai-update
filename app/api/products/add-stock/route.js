@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
-import Product from "@/models/product";
+import Product from "@/models/Product";
 
 export async function POST(req) {
   await dbConnect();

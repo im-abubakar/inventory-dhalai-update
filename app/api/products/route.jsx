@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import Product from "@/models/product"; // your product mongoose model
+import Product from "@/models/Product"; // your product mongoose model
 import { writeFile } from "fs/promises";
 import path from "path";
 import connectDB from "@/lib/mongodb";

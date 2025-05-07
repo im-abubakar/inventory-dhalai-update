@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import Product from "@/models/product"; // Your Mongoose Product model
+import Product from "@/models/Product"; // Your Mongoose Product model
 import connectDB from "@/lib/mongodb";
 
 export async function PUT(req) {
