@@ -8,7 +8,7 @@ const itemSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    required: function() {
+    required: function () {
       return ['Plastic', 'Backlight Storage Box', 'Plastic Molding', 'Brass'].includes(this.type);
     }
   },
