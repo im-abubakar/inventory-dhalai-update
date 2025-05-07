@@ -8,6 +8,7 @@ import CartItems from "@/components/cartItems";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function Dashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -174,25 +175,12 @@ export default function Dashboard() {
 
 
 
-  return (
-    <div className="flex p-4 bg-gradient-to-br from-green-100 to-green-200">
-      {/* Left Section */}
-      <div className="w-1/2 p-4 bg-white rounded-xl shadow-md flex flex-col justify-between">
-        <div>
-          {/* Customer Select and Barcode */}
-          {/* <div className="flex items-center gap-2 mb-2">
-            <Input placeholder="Walk in customer" />
-            <Button size="icon">
-              <Plus />
-            </Button>
-          </div>
-          <div className="flex items-center gap-2 mb-4">
-            <Input placeholder="Scan barcode or type the number then hit enter" />
-            <Button size="icon" variant="secondary">
-              <Check />
-            </Button>
-          </div> */}
 
+  return (
+    <div className="flex flex-col lg:flex-row p-4 bg-gradient-to-br from-green-100 to-green-200 gap-4">
+      {/* Left Section */}
+      <div className="lg:w-1/2 w-full p-4 bg-white rounded-xl shadow-md flex flex-col justify-between">
+        <div>
           {/* Items Table */}
           <CartItems
             cartItems={cartItems}
@@ -205,10 +193,9 @@ export default function Dashboard() {
         <div className="pt-4">
           <div className="flex justify-between items-center mb-2">
             <span>Total Item(s): {cartItems.length}</span>
-
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button variant="secondary">
               <Printer size={16} className="mr-1" />
               Print
@@ -230,7 +217,8 @@ export default function Dashboard() {
       </div>
 
       {/* Right Section */}
-      <div className="w-1/2 p-4 bg-white rounded-xl shadow-md ml-4 h-[600px]">
+      {/* Right Section */}
+      <div className="lg:w-1/2 w-full p-4 bg-white rounded-xl shadow-md h-auto">
         {/* Category Tabs */}
         <div className="flex gap-2 mb-4 flex-wrap sticky top-0 bg-white py-2 z-10">
           {categories.map((cat) => (
@@ -244,9 +232,10 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="h-[450px] overflow-y-auto">
+        {/* Product List with Scrollbar */}
+        <div className="h-[500px] lg:h-[420px] overflow-y-auto">
           {/* Product Cards */}
-          <div className="grid grid-cols-5 gap-">
+          <div className="grid grid-cols-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 min-w-[600px]">
             {filteredProducts.map((prod, index) => (
               <Card
                 key={prod._id || index}
@@ -255,10 +244,12 @@ export default function Dashboard() {
               >
                 <CardContent className="py-4">
                   {prod.image ? (
-                    <img
+                    <Image
                       src={prod.image}
                       alt={prod.productName}
-                      className="h-20 w-full object-cover mb-2 rounded"
+                      className="h-15 w-full object-cover mb-2 rounded"
+                      width={60}
+                      height={80}
                     />
                   ) : (
                     <div className="text-gray-400 mb-1">NO IMAGE</div>
@@ -274,8 +265,8 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
-      </div>
-
+      </div>  
     </div>
   );
 }
+

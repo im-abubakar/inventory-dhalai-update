@@ -4,7 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import AddProduct from "@/components/add-item/AddProduct";
 import ProductList from "@/components/ProductList";
 import { useEffect, useState } from "react";
-import { Package, Plus, File, BookDashed } from "lucide-react";
+import { Package, Plus, File, BookDashed, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AddStock from "@/components/AddStock";
 import Settings from "@/components/settings";
@@ -15,18 +15,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { signOut } from "next-auth/react"; // Import signOut from NextAuth.js
+import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-
 
 export default function DashboardLayout({ children }) {
   const [products, setProducts] = useState([]);
   const [openProductList, setOpenProductList] = useState(false);
   const [openProductForm, setOpenProductForm] = useState(false);
   const [openStockForm, setOpenStockForm] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false); // State for mobile menu
   const { data: session } = useSession();
-
 
   const router = useRouter();
   const pathname = usePathname();
@@ -46,16 +45,27 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   const handleLogout = async () => {
-    await signOut({ redirect: false }); // Log out the user without redirecting immediately
-    router.push("/login"); // Redirect to login page (or wherever you'd like after logout)
+    await signOut({ redirect: false });
+    router.push("/login");
   };
 
-
   return (
-    <div className="min-h-screen bg-gray-50 ">
+    <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm">
         <div className="flex items-center justify-between px-4 py-2">
-          <div className="flex space-x-2">
+          {/* Hamburger Menu Button for Mobile */}
+          <div className="lg:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex space-x-2">
             <Dialog open={openProductForm} onOpenChange={setOpenProductForm}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="icon" className="h-8 w-8 mt-1">
@@ -82,7 +92,6 @@ export default function DashboardLayout({ children }) {
                   <DialogTitle>Products</DialogTitle>
                 </DialogHeader>
 
-                {/* Pass products and fetchProducts to ProductList */}
                 <ProductList
                   products={products}
                   fetchProducts={fetchProducts}
@@ -98,14 +107,13 @@ export default function DashboardLayout({ children }) {
                 </Button>
               </DialogTrigger>
               <DialogContent className="mt-0 mx-auto w-[25%] max-w-xl">
-                <DialogHeader>
-                  {/* <DialogTitle>Stock Management</DialogTitle> */}
-                </DialogHeader>
+                <DialogHeader></DialogHeader>
                 <AddStock />
               </DialogContent>
             </Dialog>
           </div>
 
+          {/* User Actions */}
           <div className="flex items-center space-x-2">
             <Button
               variant={pathname === "/dashboard" ? "default" : "ghost"}
@@ -116,37 +124,22 @@ export default function DashboardLayout({ children }) {
               Dashboard
             </Button>
 
-
             {session?.user?.role === "admin" && (
               <Button
-                variant={pathname === "/dashboard/transaction" ? "default" : "ghost"}
+                variant={
+                  pathname === "/dashboard/transaction" ? "default" : "ghost"
+                }
                 className="flex items-center"
                 onClick={() => router.push("/dashboard/transaction")}
               >
                 <File className="mr-2 h-4 w-4" />
                 Transaction
               </Button>
-
             )}
 
-
-            <Dialog open={openStockForm} onOpenChange={setOpenStockForm}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" className="flex items-center ml-4">
-                  <Package className="mr-2 h-4 w-4" />
-                  Setting
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="mt-0 mx-auto w-[25%] max-w-xl">
-                <DialogHeader>
-                  {/* <DialogTitle>Stock Management</DialogTitle> */}
-                </DialogHeader>
-                <Settings />
-              </DialogContent>
-            </Dialog>
             {session?.user?.role === "admin" && (
               <Image
-                src="/profile.jpeg" // ✅ Local image from public folder
+                src="/profile.jpeg"
                 alt="Profile"
                 className="w-8 h-8 object-cover"
                 height={100}
@@ -157,12 +150,70 @@ export default function DashboardLayout({ children }) {
             <Button
               variant="destructive"
               size="sm"
-              onClick={handleLogout} // Add logout handler here
+              onClick={handleLogout}
             >
               Log Out
             </Button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {menuOpen && (
+          <div className="lg:hidden bg-white shadow-md p-4 space-y-2">
+            <Dialog open={openProductForm} onOpenChange={setOpenProductForm}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full">
+                  Add Product
+                </Button>
+              </DialogTrigger>
+            </Dialog>
+
+            <Dialog open={openProductList} onOpenChange={setOpenProductList}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-full">
+                  Products
+                </Button>
+              </DialogTrigger>
+            </Dialog>
+
+            <Dialog open={openStockForm} onOpenChange={setOpenStockForm}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-full">
+                  Add Stock
+                </Button>
+              </DialogTrigger>
+            </Dialog>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full"
+              onClick={() => router.push("/dashboard")}
+            >
+              Dashboard
+            </Button>
+
+            {session?.user?.role === "admin" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full"
+                onClick={() => router.push("/dashboard/transaction")}
+              >
+                Transaction
+              </Button>
+            )}
+
+            <Button
+              variant="destructive"
+              size="sm"
+              className="w-full"
+              onClick={handleLogout}
+            >
+              Log Out
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="p-4">{children}</div>
