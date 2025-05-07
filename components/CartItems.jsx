@@ -2,7 +2,6 @@ import { X } from "lucide-react";
 import React from "react";
 
 const CartItems = ({ cartItems, setCartItems, onRemove, onUpdate }) => {
-    // console.log(cartItems, "cartItems");
 
     const handleQtyChange = (id, value) => {
         setCartItems((prevItems) =>

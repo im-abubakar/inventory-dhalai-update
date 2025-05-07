@@ -4,12 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Check, Printer, Hand, Ban, DollarSign, X, TicketIcon, CheckCheck, CheckCheckIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import CartItems from "@/components/cartItems";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-
+import CartItems from "../../components/CartItems";
 export default function Dashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: session, status } = useSession({
@@ -20,7 +19,7 @@ export default function Dashboard() {
     },
   });
 
-  console.log("role is", session?.user?.role);
+  // console.log("role is", session?.user?.role);
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState("All");
   const [products, setProducts] = useState([]);

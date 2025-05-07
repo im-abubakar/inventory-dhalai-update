@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { Package, Plus, File, BookDashed, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AddStock from "@/components/AddStock";
-import Settings from "@/components/settings";
 import {
   Dialog,
   DialogContent,
