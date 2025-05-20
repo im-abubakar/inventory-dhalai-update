@@ -2,13 +2,14 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Check, Printer, Hand, Ban, DollarSign, X, TicketIcon, CheckCheck, CheckCheckIcon } from "lucide-react";
+import { Printer, Ban, CheckCheckIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import CartItems from "../../components/CartItems";
+import Navbar from "@/components/Navbar";
 export default function Dashboard() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,10 +25,11 @@ export default function Dashboard() {
   const [selectedTab, setSelectedTab] = useState("All");
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-
-  // State to hold items added to cart (left table)
   const [cartItems, setCartItems] = useState([]);
-  const fetchProducts = async () => {
+
+
+
+  const fetchProducts = async () => {   // fetching products
     try {
       const res = await fetch("/api/products");
       const data = await res.json(); // Only this declaration is needed
@@ -38,6 +40,11 @@ export default function Dashboard() {
     }
   };
 
+  // Handle logout
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    router.push("/login");
+  };
 
 
   useEffect(() => {
@@ -61,9 +68,12 @@ export default function Dashboard() {
     }
   }, [status, router]);
 
-  if (status === "loading") {
-    return <p>Loading...</p>; // While checking session
-  }
+  // if (status === "loading") {
+  //   return <div className="flex items-center justify-center h-screen">
+  //     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+  //     <span className="ml-2">Checking session...</span>
+  //   </div>; // While checking session
+  // }
 
 
   // Static categories
@@ -77,9 +87,6 @@ export default function Dashboard() {
     "Pital",
   ];
 
-
-
-  // Fetch products
 
 
   // Handle adding to cart
@@ -177,92 +184,100 @@ export default function Dashboard() {
 
 
   return (
-    <div className="flex flex-col lg:flex-row p-4 bg-gradient-to-br from-green-100 to-green-200 gap-4">
-      {/* Left Section */}
-      <div className="lg:w-1/2 w-full p-4 bg-white rounded-xl shadow-md flex flex-col justify-between">
-        <div>
-          {/* Items Table */}
-          <CartItems
-            cartItems={cartItems}
-            setCartItems={setCartItems}
-            onRemove={handleRemoveFromCart}
-          />
-        </div>
 
-        {/* Footer */}
-        <div className="pt-4">
-          <div className="flex justify-between items-center mb-2">
-            <span>Total Item(s): {cartItems.length}</span>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar
+        products={products}
+        fetchProducts={fetchProducts}
+        handleLogout={handleLogout}
+      />
+      <div className="flex flex-col lg:flex-row p-4 bg-gradient-to-br from-green-100 to-green-200 gap-4">
+        {/* Left Section */}
+        <div className="lg:w-1/2 w-full p-4 bg-white rounded-xl shadow-md flex flex-col justify-between">
+          <div>
+            {/* Items Table */}
+            <CartItems
+              cartItems={cartItems}
+              setCartItems={setCartItems}
+              onRemove={handleRemoveFromCart}
+            />
           </div>
 
-          <div className="flex gap-2 flex-wrap">
-            <Button variant="secondary">
-              <Printer size={16} className="mr-1" />
-              Print
-            </Button>
-            <Button variant="destructive">
-              <Ban size={16} className="mr-1" />
-              Cancel
-            </Button>
-            <Button
-              className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
-              onClick={handleDone}
-              disabled={isSubmitting} // Disable button when submitting
-            >
-              <CheckCheckIcon size={16} className="mr-1" />
-              {isSubmitting ? "Processing..." : "Done"}
-            </Button>
-          </div>
-        </div>
-      </div>
+          {/* Footer */}
+          <div className="pt-4">
+            <div className="flex justify-between items-center mb-2">
+              <span>Total Item(s): {cartItems.length}</span>
+            </div>
 
-      {/* Right Section */}
-      {/* Right Section */}
-      <div className="lg:w-1/2 w-full p-4 bg-white rounded-xl shadow-md h-auto">
-        {/* Category Tabs */}
-        <div className="flex gap-2 mb-4 flex-wrap sticky top-0 bg-white py-2 z-10">
-          {categories.map((cat) => (
-            <Button
-              key={cat}
-              variant={selectedTab === cat ? "default" : "secondary"}
-              onClick={() => setSelectedTab(cat)}
-            >
-              {cat}
-            </Button>
-          ))}
-        </div>
-
-        {/* Product List with Scrollbar */}
-        <div className="h-[500px] lg:h-[420px] overflow-y-auto">
-          {/* Product Cards */}
-          <div className="grid grid-cols-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 min-w-[600px]">
-            {filteredProducts.map((prod, index) => (
-              <Card
-                key={prod._id || index}
-                className="text-center cursor-pointer hover:shadow-lg transition"
-                onClick={() => handleAddToCart(prod)}
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="secondary">
+                <Printer size={16} className="mr-1" />
+                Print
+              </Button>
+              <Button variant="destructive">
+                <Ban size={16} className="mr-1" />
+                Cancel
+              </Button>
+              <Button
+                className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
+                onClick={handleDone}
+                disabled={isSubmitting} // Disable button when submitting
               >
-                <CardContent className="py-4">
-                  {prod.image ? (
-                    <Image
-                      src={prod.image}
-                      alt={prod.productName}
-                      className="h-15 w-full object-cover mb-2 rounded"
-                      width={60}
-                      height={80}
-                    />
-                  ) : (
-                    <div className="text-gray-400 mb-1">NO IMAGE</div>
-                  )}
-                  <div className="text-blue-500 font-semibold">
-                    {prod.productName}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Stock: {prod.availableStock} {prod.stockUnit}
-                  </div>
-                </CardContent>
-              </Card>
+                <CheckCheckIcon size={16} className="mr-1" />
+                {isSubmitting ? "Processing..." : "Done"}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Section */}
+        {/* Right Section */}
+        <div className="lg:w-1/2 w-full p-4 bg-white rounded-xl shadow-md h-auto">
+          {/* Category Tabs */}
+          <div className="flex gap-2 mb-4 flex-wrap sticky top-0 bg-white py-2 z-10">
+            {categories.map((cat) => (
+              <Button
+                key={cat}
+                variant={selectedTab === cat ? "default" : "secondary"}
+                onClick={() => setSelectedTab(cat)}
+              >
+                {cat}
+              </Button>
             ))}
+          </div>
+
+          {/* Product List with Scrollbar */}
+          <div className="h-[500px] lg:h-[420px] overflow-y-auto">
+            {/* Product Cards */}
+            <div className="grid grid-cols-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 min-w-[600px]">
+              {filteredProducts.map((prod, index) => (
+                <Card
+                  key={prod._id || index}
+                  className="text-center cursor-pointer hover:shadow-lg transition"
+                  onClick={() => handleAddToCart(prod)}
+                >
+                  <CardContent className="py-4">
+                    {prod.image ? (
+                      <Image
+                        src={prod.image}
+                        alt={prod.productName}
+                        className="h-15 w-full object-cover mb-2 rounded"
+                        width={60}
+                        height={80}
+                      />
+                    ) : (
+                      <div className="text-gray-400 mb-1">NO IMAGE</div>
+                    )}
+                    <div className="text-blue-500 font-semibold">
+                      {prod.productName}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Stock: {prod.availableStock} {prod.stockUnit}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -9,7 +9,7 @@ export async function POST(req) {
 
     const body = await req.json();
 
-    const { name, email, password } = body;
+    const { name, email, password , role} = body;
 
     // Basic validation
     if (!name || !email || !password) {
@@ -30,6 +30,7 @@ export async function POST(req) {
       name,
       email,
       password: hashedPassword,
+      role: role || "user" // Default role
     });
 
     return NextResponse.json({ message: "User created successfully", user: newUser });
