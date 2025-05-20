@@ -13,7 +13,8 @@ const AddStock = () => {
     const [productName, setProductName] = useState("");
     const [stockUnit, setStockUnit] = useState("");
     const [availableStock, setAvailableStock] = useState("");
-    const [products, setProducts] = useState([]); // store products from DB
+    const [products, setProducts] = useState([]); // store products from DB\
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Static categories
     const categories = [
@@ -84,6 +85,8 @@ const AddStock = () => {
             return;
         }
 
+        setIsSubmitting(true); // Disable the button
+
         try {
             const formData = new FormData();
             formData.append("category", selectedCategory);
@@ -113,8 +116,11 @@ const AddStock = () => {
         } catch (err) {
             toast.error("Something went wrong");
             console.error(err);
+        } finally {
+            setIsSubmitting(false); // Re-enable the button
         }
     };
+
 
     return (
         <div>
@@ -198,8 +204,8 @@ const AddStock = () => {
                             />
                         </div>
 
-                        <Button type="submit" className="w-full">
-                            Add Stock
+                        <Button type="submit" className="w-full" disabled={isSubmitting}>
+                            {isSubmitting ? "Submitting..." : "Add Stock"}
                         </Button>
                     </form>
                 </CardContent>

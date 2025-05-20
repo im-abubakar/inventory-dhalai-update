@@ -51,12 +51,7 @@ export async function POST(req) {
   // ✅ Save image if present
   let imageUrl = null;
   if (image) {
-    const bytes = await image.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const filename = Date.now() + "-" + image.name;
-    const filepath = path.join(process.cwd(), "public/uploads", filename);
-    await writeFile(filepath, buffer);
-    imageUrl = "/uploads/" + filename;
+    imageUrl = image; // directly assign the URL
   }
 
   // ✅ Create and save new product

@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import CartItems from "../../components/CartItems";
 export default function Dashboard() {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: session, status } = useSession({
     required: true,
@@ -20,7 +21,6 @@ export default function Dashboard() {
   });
 
   // console.log("role is", session?.user?.role);
-  const router = useRouter();
   const [selectedTab, setSelectedTab] = useState("All");
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -30,13 +30,14 @@ export default function Dashboard() {
   const fetchProducts = async () => {
     try {
       const res = await fetch("/api/products");
-      const data = await res.json();
+      const data = await res.json(); // Only this declaration is needed
       setProducts(data);
       setFilteredProducts(data); // Initially show all
     } catch (err) {
       console.error("Failed to fetch products:", err);
     }
   };
+
 
 
   useEffect(() => {
@@ -264,7 +265,7 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
-      </div>  
+      </div>
     </div>
   );
 }

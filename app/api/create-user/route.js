@@ -7,36 +7,35 @@ export async function POST(req) {
   try {
     await connectDB();
 
-    const body = await req.json().catch(() => null);
-    if (!body) {
-      return NextResponse.json({ message: "Invalid JSON" }, { status: 400 });
-    }
+    const body = await req.json();
 
     const { name, email, password } = body;
 
+    // Basic validation
     if (!name || !email || !password) {
-      return NextResponse.json({ message: "All fields are required" }, { status: 400 });
+      return NextResponse.json({ message: "All fields (name, email, password) are required" }, { status: 400 });
     }
 
-    // Check if user already exists
+    // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return NextResponse.json({ message: "User already exists" }, { status: 400 });
+      return NextResponse.json({ message: "User already exists with this email" }, { status: 400 });
     }
 
-    // Hash the password
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
+    // Save user
     const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
     });
 
-    return NextResponse.json({ message: "User created", user: newUser });
+    return NextResponse.json({ message: "User created successfully", user: newUser });
+
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ message: "Error creating user" }, { status: 500 });
+    return NextResponse.json({ message: "Server error while creating user" }, { status: 500 });
   }
 }

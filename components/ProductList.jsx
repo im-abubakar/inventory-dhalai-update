@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import Image from "next/image";
 
 const ProductList = ({ products, fetchProducts }) => {
     const [editingProductId, setEditingProductId] = useState(null);
     const [editedProduct, setEditedProduct] = useState(null);
+    const [deletingId, setDeletingId] = useState(null);
+
 
     const handleEdit = (product) => {
         setEditingProductId(product._id); // Use _id as the unique identifier
@@ -51,7 +54,11 @@ const ProductList = ({ products, fetchProducts }) => {
         setEditedProduct(null); // Clear edited product state
     };
 
-    const deleteProduct = async (id) => {
+    const handleDelete = async (id) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this product?");
+        if (!confirmDelete) return;
+
+        setDeletingId(id); // disable the button
         try {
             const response = await fetch(`/api/products/${id}`, {
                 method: "DELETE",
@@ -59,7 +66,7 @@ const ProductList = ({ products, fetchProducts }) => {
 
             if (response.ok) {
                 toast.success("Product deleted successfully!");
-                fetchProducts(); // Refresh the product list
+                fetchProducts(); // refresh the product list
             } else {
                 const errorData = await response.json();
                 toast.error(errorData.message || "Failed to delete product.");
@@ -67,8 +74,11 @@ const ProductList = ({ products, fetchProducts }) => {
         } catch (err) {
             console.error("Failed to delete product:", err);
             toast.error("An error occurred while deleting the product.");
+        } finally {
+            setDeletingId(null); // re-enable the button
         }
     };
+
 
     return (
         <div className="overflow-y-auto border rounded-lg shadow-sm bg-white p-2">
@@ -99,7 +109,9 @@ const ProductList = ({ products, fetchProducts }) => {
                                     <tr key={product._id} className="text-sm border-t">
                                         <td className="p-2 border">
                                             {product.image ? (
-                                                <img
+                                                <Image
+                                                    width={40}
+                                                    height={40}
                                                     src={product.image}
                                                     alt=""
                                                     className="w-10 h-10 object-cover rounded"
@@ -196,9 +208,10 @@ const ProductList = ({ products, fetchProducts }) => {
                                                     <Button
                                                         size="icon"
                                                         variant="destructive"
-                                                        onClick={() => deleteProduct(product._id)}
+                                                        onClick={() => handleDelete(product._id)}
+                                                        disabled={deletingId === product._id}
                                                     >
-                                                        🗑️
+                                                        {deletingId === product._id ? "⏳" : "🗑️"}
                                                     </Button>
                                                 </div>
                                             )}

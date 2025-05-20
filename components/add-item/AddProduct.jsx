@@ -14,6 +14,8 @@ const AddProduct = () => {
   const [stockUnit, setStockUnit] = useState("");
   const [availableStock, setAvailableStock] = useState("");
   const [image, setImage] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   // Static categories
   const categories = [
@@ -55,53 +57,80 @@ const AddProduct = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!selectedCategory || !stockUnit || !availableStock) {
-      toast.error("Please fill all required fields");
+  if (!selectedCategory || !stockUnit || !availableStock) {
+    toast.error("Please fill all required fields");
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  let imageUrl = "";
+
+  try {
+    // ✅ 1. Upload image to Cloudinary (if image selected)
+    if (image) {
+      const cloudinaryData = new FormData();
+      cloudinaryData.append("file", image);
+      cloudinaryData.append("upload_preset", "dhalaibrass"); // replace with actual preset
+      cloudinaryData.append("cloud_name", "dl5elwksn"); // optional if using endpoint
+
+      const cloudinaryRes = await fetch("https://api.cloudinary.com/v1_1/dl5elwksn/image/upload", {
+        method: "POST",
+        body: cloudinaryData,
+      });
+
+      const cloudinaryJson = await cloudinaryRes.json();
+      imageUrl = cloudinaryJson.secure_url; // ✅ Cloudinary-hosted image URL
+    }
+
+    // ✅ 2. Prepare form data to send to your own API
+    const formData = new FormData();
+    formData.append("category", selectedCategory);
+    formData.append("productName", productName);
+    formData.append("stockUnit", stockUnit);
+    formData.append("availableStock", availableStock);
+    if (imageUrl) {
+      // If image was uploaded to Cloudinary, attach the URL
+      formData.append("image", imageUrl);
+    }
+
+    // ✅ 3. Send form data to your Next.js API route
+    const res = await fetch("/api/products", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (data.error === "Product already exists") {
+        toast.error("Product already exists");
+      } else {
+        toast.error("Failed to add product");
+      }
       return;
     }
 
-    try {
-      const formData = new FormData();
-      formData.append("category", selectedCategory);
-      formData.append("productName", productName);
-      formData.append("stockUnit", stockUnit);
-      formData.append("availableStock", availableStock);
-      if (image) {
-        formData.append("image", image);
-      }
+    toast.success("Product added successfully");
 
-      const res = await fetch("/api/products", {
-        method: "POST",
-        body: formData,
-      });
+    // ✅ Reset form
+    setSelectedCategory("");
+    setProductName("");
+    setStockUnit("");
+    setAvailableStock("");
+    setImage(null);
+  } catch (err) {
+    console.error(err);
+    toast.error("Something went wrong");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
-      const data = await res.json();
 
-      if (!res.ok) {
-        if (data.error === "Product already exists") {
-          toast.error("Product already exists");
-        } else {
-          toast.error("Failed to add product");
-        }
-        return;
-      }
-
-      toast.success("Product added successfully");
-
-      // Reset form
-      setSelectedCategory("");
-      setProductName("");
-      setStockUnit("");
-      setAvailableStock("");
-      setImage(null);
-    } catch (err) {
-      toast.error("Something went wrong");
-      console.error(err);
-    }
-  };
 
   return (
     <div>
@@ -186,8 +215,8 @@ const AddProduct = () => {
               />
             </div>
 
-            <Button type="submit" className="w-full">
-              Add Product
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Adding..." : "Add Product"}
             </Button>
           </form>
         </CardContent>
